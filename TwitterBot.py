@@ -1,10 +1,13 @@
 import tweepy
 from Tkinter import *
 
-consumer_key = 'consumer key'
-consumer_secret = 'consumer secrets'
-access_token = 'access token'
-access_token_secret = 'access token secret'
+# credentials associated with:
+# account:app
+# jerawls21:twitter_bot_pilot
+consumer_key = '6PICghvk8itkDrAIMlw2mU59i'
+consumer_secret = 'k4OztI7NZ823kGG2bWRdycfPbYzYrEYhnPL9380E8wv9h82hUy'
+access_token = '931082643134976000-ZMSL8Lu9p9SiKULERKc5JPoKQ3wDflS'
+access_token_secret = 'IRzn3h6BJ47VMeG9XLDkxTtXvmUzAaFQ3wB6Cv7dcGHXl'
 
 auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
 auth.set_access_token(access_token, access_token_secret)
@@ -68,20 +71,20 @@ def getE7():
 def mainFunction():
     getE1()
     search = getE1()
-    
+
     getE2()
     numberOfTweets = getE2()
-    numberOfTweets = int(numberOfTweets)
-    
+    numberOfTweets = float(numberOfTweets)
+
     getE3()
     phrase = getE3()
-    
+
     getE4()
     reply = getE4()
-    
+
     getE5()
     retweet = getE5()
-    
+
     getE6()
     favorite = getE6()
 
@@ -98,7 +101,7 @@ def mainFunction():
                 username = tweet.user.screen_name
                 api.update_status("@" + username + " " + phrase, in_reply_to_status_id = tweetId)
                 print ("Replied with " + phrase)
-                
+
             except tweepy.TweepError as e:
                 print(e.reason)
 
@@ -106,12 +109,12 @@ def mainFunction():
                 break
 
 
-    if retweet == "yes": 
+    if retweet == "yes":
         for tweet in tweepy.Cursor(api.search, search).items(numberOfTweets):
             try:
                 #Retweet
                 tweet.retweet()
-                print('Retweeted the tweet')   
+                print('Retweeted the tweet')
 
             except tweepy.TweepError as e:
                 print(e.reason)
@@ -119,12 +122,12 @@ def mainFunction():
             except StopIteration:
                 break
 
-    if favorite == "yes": 
+    if favorite == "yes":
         for tweet in tweepy.Cursor(api.search, search).items(numberOfTweets):
             try:
                 #Favorite
                 tweet.favorite()
-                print('Favorited the tweet')   
+                print('Favorited the tweet')
 
             except tweepy.TweepError as e:
                 print(e.reason)
@@ -132,19 +135,19 @@ def mainFunction():
             except StopIteration:
                 break
 
-    if follow == "yes": 
+    if follow == "yes":
         for tweet in tweepy.Cursor(api.search, search).items(numberOfTweets):
             try:
                 #Follow
                 tweet.user.follow()
                 print('Followed the user')
-                
+
             except tweepy.TweepError as e:
                 print(e.reason)
 
             except StopIteration:
-                break       
-            
+                break
+
 submit = Button(root, text ="Submit", command = mainFunction)
 
 label1.pack()

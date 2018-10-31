@@ -1,28 +1,49 @@
-import tweepy
-from Tkinter import *
+# https://www.digitalocean.com/community/tutorials/how-to-create-a-twitterbot-with-python-3-and-the-tweepy-library
 
-# credentials associated with:
-# account:app
-# jerawls21:twitter_bot_pilot
-consumer_key = '6PICghvk8itkDrAIMlw2mU59i'
-consumer_secret = 'k4OztI7NZ823kGG2bWRdycfPbYzYrEYhnPL9380E8wv9h82hUy'
-access_token = '931082643134976000-ZMSL8Lu9p9SiKULERKc5JPoKQ3wDflS'
-access_token_secret = 'IRzn3h6BJ47VMeG9XLDkxTtXvmUzAaFQ3wB6Cv7dcGHXl'
+import time
+import tweepy
+import Tkinter
+from Tkinter import *
+from credentials import *
+from cluster1 import *
+from cluster2 import *
 
 auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
 auth.set_access_token(access_token, access_token_secret)
 api = tweepy.API(auth)
 
 user = api.me()
-print(user.name)
-print(user.location)
+print("bot for {0} account ({1})".format(user.name, user.screen_name))
+print("user location: {}".format(user.location))
 
 for follower in tweepy.Cursor(api.followers).items():
     follower.follow()
 
-print("Followed everyone that is following " + user.name)
+print("Followed everyone that is following: {}".format(user.name))
+ids = []
+for page in tweepy.Cursor(api.followers_ids, screen_name="jerawls21").pages():
+    ids.extend(page)
+    time.sleep(3)
 
-root = Tk()
+print("total followers: {}".format(len(ids)))
+
+def limit_handled(cursor):
+    while True:
+        try:
+            yield cursor.next()
+        except tweepy.RateLimitError:
+            time.sleep(15 * 60)
+
+print("cluster 1 accounts: {}".format(cluster_1))
+print("cluster 2 accounts: {}".format(cluster_2))
+
+# print detailed information about each followers
+# for follower in limit_handled(tweepy.Cursor(api.followers).items()):
+#     if follower.friends_count < 300:
+#         print("follower {0}: {1}".format(follower, follower.screen_name))
+
+
+root = Tkinter.Tk()
 
 label1 = Label( root, text="Search")
 E1 = Entry(root, bd =5)
@@ -45,6 +66,12 @@ E6 = Entry(root, bd =5)
 label7 = Label( root, text="Follow?")
 E7 = Entry(root, bd =5)
 
+label8 = Label( root, text="Tweet?")
+E8 = Entry(root, bd =5)
+
+label9 = Label( root, text="Mass tweet?")
+E9 = Entry(root, bd =5)
+
 def getE1():
     return E1.get()
 
@@ -53,7 +80,6 @@ def getE2():
 
 def getE3():
     return E3.get()
-
 
 def getE4():
     return E4.get()
@@ -67,14 +93,21 @@ def getE6():
 def getE7():
     return E7.get()
 
+def getE8():
+    return E8.get()
+
+def getE9():
+    return E9.get()
 
 def mainFunction():
     getE1()
     search = getE1()
 
     getE2()
-    numberOfTweets = getE2()
-    numberOfTweets = float(numberOfTweets)
+    numberOfTweets = 1
+
+    # numberOfTweets = getE2()
+    # numberOfTweets = float(numberOfTweets)
 
     getE3()
     phrase = getE3()
@@ -147,6 +180,38 @@ def mainFunction():
 
             except StopIteration:
                 break
+    getE8()
+    update_status = getE8()
+
+    if update_status == "yes":
+            try:
+                api.update_status(phrase)
+            except tweepy.TweepError as e:
+                print(e.reason)
+
+    getE9()
+    mass_tweet = getE9()
+
+    if mass_tweet == "yes":
+        media_ids = []
+        for follower in cluster_2:
+            try:
+                #Reply
+                print(follower)
+                #api.update_status(follower + " " + phrase)
+                # https://stackoverflow.com/questions/43490332/sending-multiple-medias-with-tweepy
+                # res = api.media_upload('NAP.png')
+                res = api.media_upload('GROUP2.gif')
+                media_ids.append(res.media_id)
+                api.update_status(follower + " "+ phrase, media_ids=media_ids)
+                print ("tweeted: " + phrase)
+
+            except tweepy.TweepError as e:
+                print(e.reason)
+
+            except StopIteration:
+                break
+
 
 submit = Button(root, text ="Submit", command = mainFunction)
 
@@ -164,6 +229,10 @@ label6.pack()
 E6.pack()
 label7.pack()
 E7.pack()
+label8.pack()
+E8.pack()
+label9.pack()
+E9.pack()
 submit.pack(side =BOTTOM)
 
 root.mainloop()
